@@ -37,7 +37,6 @@ public class MainActivity extends AppCompatActivity {
     private static final String MY_BT_NAME = "OnRoute";
     private static final UUID MY_BT_UUID = UUID.fromString("fa87c0d0-afac-11de-8a39-0800200c9a66");
 
-    private AcceptThread acceptThread;
 
     @ViewById(R.id.linearlayout_main)
     LinearLayout linearLayout_main;
@@ -50,10 +49,8 @@ public class MainActivity extends AppCompatActivity {
 
     @AfterViews
     protected void afterViews(){
-        linearLayout_main.setVisibility(View.GONE);
 
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-        acceptThread = new AcceptThread();
 
         // If the adapter is null, then Bluetooth is not supported
         if (mBluetoothAdapter == null) {
@@ -75,37 +72,40 @@ public class MainActivity extends AppCompatActivity {
 
 
         // Register the BroadcastReceiver
-        IntentFilter filter1 = new IntentFilter(BluetoothDevice.ACTION_PAIRING_REQUEST);
-        registerReceiver(mReceiver, filter1);
+
+        /*IntentFilter filter1 = new IntentFilter(BluetoothDevice.ACTION_PAIRING_REQUEST);
+        registerReceiver(mReceiver, filter1);*/
+
         IntentFilter filter2 = new IntentFilter(BluetoothDevice.ACTION_BOND_STATE_CHANGED);
         registerReceiver(mReceiver, filter2);
+
         // Don't forget to unregister during onDestroy
 
-//        acceptThread.start();
+
     }
 
-    // Create a BroadcastReceiver for ACTION_FOUND
+    // Create a BroadcastReceiver
     private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
-            // When discovery finds a device
-            if (BluetoothDevice.ACTION_PAIRING_REQUEST.equals(action)) {
 
+            if (BluetoothDevice.ACTION_PAIRING_REQUEST.equals(action)) {
+                /*
                 // Get the BluetoothDevice object from the Intent
                 BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
 
-
-                /*try {
+                */
+                /**
+                 * This code can retrieve Name and MAC without pairing but gives client an error
+                 */
+                /*
+                try {
                     device.getClass().getMethod("setPairingConfirmation", boolean.class).invoke(device, true);
                     device.getClass().getMethod("cancelPairingUserInput").invoke(device);
                 } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
                     e.printStackTrace();
-                }*/
-
-                /*// Display the device name and MAC address
-                linearLayout_main.setVisibility(View.VISIBLE);
-                deviceName.setText(device.getName());
-                deviceAddress.setText(device.getAddress());*/
+                }
+                */
             }
 
             if (BluetoothDevice.ACTION_BOND_STATE_CHANGED.equals(action)){
@@ -113,36 +113,30 @@ public class MainActivity extends AppCompatActivity {
                 // Get the BluetoothDevice object from the Intent
                 BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
 
-                // Display the device name and MAC address
-                linearLayout_main.setVisibility(View.VISIBLE);
-                deviceName.setText(device.getName());
-                deviceAddress.setText(device.getAddress());
+                Intent i = new Intent(getApplicationContext(), SecondActivity_.class);
+                i.putExtra("deviceName", device.getName());
+                i.putExtra("deviceAddress", device.getAddress());
+                startActivity(i);
+                finish();
             }
         }
     };
 
 
-    private void pairDevice(BluetoothDevice device) {
-        try {
-            Method method = device.getClass().getMethod("createBond", (Class[]) null);
-            method.invoke(device, (Object[]) null);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
 
-    private void unpairDevice(BluetoothDevice device) {
-        try {
-            Method method = device.getClass().getMethod("removeBond", (Class[]) null);
-            method.invoke(device, (Object[]) null);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        unregisterReceiver(mReceiver);
     }
 
 
+    /**
+     * Code written below can be useful later
+     */
 
-
+/*
 
     private class AcceptThread extends Thread {
         private final BluetoothServerSocket mmServerSocket;
@@ -184,7 +178,9 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
-        /** Will cancel the listening socket, and cause the thread to finish */
+        */
+/*
+
         public void cancel() {
             try {
                 mmServerSocket.close();
@@ -203,9 +199,26 @@ public class MainActivity extends AppCompatActivity {
         deviceAddress.setText(clientDevice.getAddress());
     }
 
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        unregisterReceiver(mReceiver);
+    private void pairDevice(BluetoothDevice device) {
+        try {
+            Method method = device.getClass().getMethod("createBond", (Class[]) null);
+            method.invoke(device, (Object[]) null);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
+
+    private void unpairDevice(BluetoothDevice device) {
+        try {
+            Method method = device.getClass().getMethod("removeBond", (Class[]) null);
+            method.invoke(device, (Object[]) null);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+
+*/
+
+
 }
